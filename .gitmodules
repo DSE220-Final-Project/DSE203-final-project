@@ -1,0 +1,6 @@
+[submodule "yadi"]
+	path = yadi
+	url = ./yadi/
+[submodule "nrdatalog2sql"]
+	path = nrdatalog2sql
+	url = ./nrdatalog2sql/
