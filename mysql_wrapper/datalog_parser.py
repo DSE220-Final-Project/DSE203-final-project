@@ -84,10 +84,10 @@ class DatalogParser(object):
 
 
     if len(where_inequality)>0: ## DN added this
-        where_clause = "WHERE "+", ".join(x+" = "+y for x,y in where_equality.iteritems())+ ', '+\
+        where_clause = "WHERE "+"AND ".join(x+" = "+y for x,y in where_equality.iteritems())+ 'AND '+\
         ", ".join(where_inequality[x[:x.find('_')]]+y+z for x,[y,z] in predicates_constraint_dict.iteritems())
     else: ## DN added this
-        where_clause = "WHERE "+", ".join(x+" = "+y for x,y in where_equality.iteritems())
+        where_clause = "WHERE "+" AND ".join(x+" = "+y for x,y in where_equality.iteritems())
         
     if len(where_equality)>0 or len(where_inequality)>0: ## DN added this
         sql_str = select_clause +" "+ from_clause +" "+ where_clause ## DN removed create view
