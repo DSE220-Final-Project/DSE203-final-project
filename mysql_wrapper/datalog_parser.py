@@ -4,9 +4,9 @@ class DatalogParser(object):
     super(DatalogParser, self).__init__()
     self.arg = arg
   
-  def parse(datalog_str):
+  def parse(self, datalog_str):
     """input is datalog string & output is sql string"""
     # TODO parsing logic here!
-    sql_str = "select * from asdf"
+    sql_str = "select * from gtd limit 2"
     return sql_str
     

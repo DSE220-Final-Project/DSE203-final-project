@@ -4,12 +4,14 @@ import pymysql.cursors
 class MysqlWrapper(object):
   """Datalog Client for Mysql"""
   def __init__(self, host='dse203gtd.cvnmpos6almn.us-east-1.rds.amazonaws.com',
-                             user='student',
-                             password='LEbKqX3q',
-                             db='gtd',
-                             charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor):
+                     user='student',
+                     password='LEbKqX3q',
+                     db='gtd',
+                     charset='utf8mb4', 
+                     cursorclass=pymysql.cursors.DictCursor):
     super(MysqlWrapper, self).__init__()
-    self.connection = pymysql.connect(host=host, user=user, password=password,db=db,charset=charset,cursorclass=cursorclass)
+    
+    self.connection = pymysql.connect(host=host, user=user, password=password, db=db, charset=charset, cursorclass=cursorclass)
     self.parser = datalog_parser.DatalogParser("asf")
     
   def execute(self, dl_query):
@@ -22,11 +24,11 @@ class MysqlWrapper(object):
             for row in cursor:
                 print(row) #TODO build a pandas DF 
     finally:
-        connection.close()
+        self.connection.close()
     
 
   
 if __name__ == '__main__':
-  wrapper = MysqlWrapper("arg")
+  wrapper = MysqlWrapper()
   dl_query = "Q(id) :- gtd(id)"
   wrapper.execute(dl_query)
