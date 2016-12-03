@@ -16,6 +16,7 @@ class MysqlWrapper(object):
     
   def execute(self, dl_query):
     sql_query = self.parser.parse(dl_query)
+    print sql_query
     
     try:
         with self.connection.cursor() as cursor:
@@ -30,5 +31,6 @@ class MysqlWrapper(object):
   
 if __name__ == '__main__':
   wrapper = MysqlWrapper()
-  dl_query = "Q(id) :- gtd(id)"
-  wrapper.execute(dl_query)
+  dl_query = "DB1(s1) :- gtd(_, 2013, 12, _, _, _, _, _,'Iraq', _, _, _, _, _, _, _, _, _, s1, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)"
+  print dl_query
+  dataframe = wrapper.execute(dl_query)
