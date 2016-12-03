@@ -1,5 +1,6 @@
 import datalog_parser
 import pymysql.cursors
+import pandas as pd
 
 class MysqlWrapper(object):
   """Datalog Client for Mysql"""
@@ -21,9 +22,11 @@ class MysqlWrapper(object):
     try:
         with self.connection.cursor() as cursor:
             cursor.execute(sql_query)
-
+            rows = []
             for row in cursor:
-                print(row) #TODO build a pandas DF 
+                rows.append(row)
+            
+            return pd.DataFrame(rows)
     finally:
         self.connection.close()
     
@@ -35,3 +38,4 @@ if __name__ == '__main__':
   print dl_query
   print ""
   dataframe = wrapper.execute(dl_query)
+  print dataframe
