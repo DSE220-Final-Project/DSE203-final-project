@@ -19,3 +19,15 @@ try:
             print(row)
 finally:
     connection.close()
+    
+# Sample output
+# {u'eventid': 201201010001}
+# {u'eventid': 201201010002}
+# {u'eventid': 201201010003}
+# {u'eventid': 201201010004}
+# {u'eventid': 201201010005}
+# {u'eventid': 201201010006}
+# {u'eventid': 201201010007}
+# {u'eventid': 201201010008}
+# {u'eventid': 201201010009}
+# {u'eventid': 201201010012}
