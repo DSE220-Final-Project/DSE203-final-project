@@ -15,13 +15,10 @@ Student Username: student
 Student Password: LEbKqX3q
 ```
 
+## End-to-end Test
+
 ```
-gdelt (postgres):
-server: dse203gdelt.cvnmpos6almn.us-east-1.rds.amazonaws.com
-Database: gdelt
-Table: gdelt (1.41611e+08 rows)
-Student Username: student
-Student Password: LEbKqX3q
+python ./runnery.py
 ```
 
 ```
