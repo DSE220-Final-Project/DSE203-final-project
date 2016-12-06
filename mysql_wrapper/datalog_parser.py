@@ -92,7 +92,6 @@ class DatalogParser(object):
             select[DatalogParser.COLUMNS[index]]= q
         index+=1
     
-
     
     ## DN added this
     def iserror(value):
@@ -109,7 +108,7 @@ class DatalogParser(object):
     for key, value in predicates.iteritems():
         if (value[0]=="'"):
             where_equality [key] = value
-        elif iserror(value): ## DN added this
+        elif value.isdigit(): ## DN added this
             where_equality [key] = value
         else:
             where_inequality [value] = key
@@ -119,9 +118,15 @@ class DatalogParser(object):
     ## For group by
     groupby_vars= []
     if len(groupby_part) > 0:
-        select[groupby_part.split(",",1)[1].split("=",1)[1].replace("))",")")]= groupby_part.split(",",1)[1].split("=",1)[0].strip()
-        groupby_vars = groupby_part.split(",",1)[0].split("[",1)[1].replace("]","")
-
+        groupby_operation_raw = groupby_part.split(",",1)[1].split("=",1)[1].replace("))",")")
+        groupby_operation_raw_var = groupby_operation_raw[groupby_operation_raw.find('(')+1:groupby_operation_raw.find(')')]
+        groupby_operation_var = where_inequality[groupby_operation_raw_var]
+        groupby_operation = groupby_operation_raw.replace(groupby_operation_raw_var ,groupby_operation_var)
+        select[groupby_operation]= groupby_part.split(",",1)[1].split("=",1)[0].strip()
+        try:
+            groupby_vars = where_inequality[groupby_part.split(",",1)[0].split("[",1)[1].replace("]","")]
+        except KeyError:
+            groupby_vars = {v: k for k, v in select.iteritems()}[groupby_part.split(",",1)[0].split("[",1)[1].replace("]","")]
     
     ## DN added this
     # For sortby
@@ -137,14 +142,11 @@ class DatalogParser(object):
     
     select_clause = "SELECT "+ ", ".join(x+" AS "+y for x,y in select.iteritems())
     from_clause = "FROM "+ from_table
-    if (len(where_inequality)>0 and len(where_equality)>0): ## DN added this
-        where_clause = "WHERE "+" AND ".join(x+" = "+y for x,y in where_equality.iteritems())+ " AND "+\
-            " AND ".join(where_inequality[x[:x.find('_')]]+y+z for x,[y,z] in predicates_constraint_dict.iteritems())
-    elif (len(where_equality)>0): ## DN added this
+    if (len(where_equality)>0): ## DN added this
         where_clause = "WHERE "+" AND ".join(x+" = "+y for x,y in where_equality.iteritems())
-    elif (len(where_inequality)>0): ## DN added this
-        where_clause = "WHERE "+" AND "+" AND ".join(where_inequality[x[:x.find('_')]]+y+z for x,[y,z] in predicates_constraint_dict.iteritems())
-    else:
+    if (len(where_inequality)>0): ## DN added this
+        where_clause = where_clause +" AND "+" AND ".join(where_inequality[x[:x.find('_')]]+y+z for x,[y,z] in predicates_constraint_dict.iteritems())
+    if (len(where_equality)==0 and len(where_inequality)==0):
         where_clause = ""
     
     if len(groupby_vars) > 0:
