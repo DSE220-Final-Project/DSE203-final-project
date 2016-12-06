@@ -3,7 +3,7 @@ import re
 class DatalogParser(object):
   """Datalog parser & SQL generator"""
   
-  columns = ["eventid", "iyear", "imonth", "iday", "approxdate", "extended", "resolution", "country", "country_txt", "region", "region_txt", "\
+  COLUMNS = ["eventid", "iyear", "imonth", "iday", "approxdate", "extended", "resolution", "country", "country_txt", "region", "region_txt", "\
       provstate", "city", "latitude", "longitude", "specificity", "vicinity", "location", "summary", "crit1", "crit2", "crit3", "doubtterr", "\
       alternative", "alternative_txt", "multiple", "success", "suicide", "attacktype1", "attacktype1_txt", "attacktype2", "\
       attacktype2_txt", "attacktype3", "attacktype3_txt", "targtype1", "targtype1_txt", "targsubtype1", "targsubtype1_txt", "\
@@ -37,37 +37,73 @@ class DatalogParser(object):
     return_select = [c.strip() for c in left[left.find("(")+1:left.find(")")].split(',')]
 
     from_table = right.split('(')[0]
-    query = [q.strip() for q in right[right.find("(")+1:right.find(")")].split(',')]
-    predicates_constraint_all = [q.strip() for q in right[right.find(")"):].split(',')][1:]
-    predicates_constraint_dict= {}
-    predicates_constraint_dict= {}
+
+    # Query
+    main_table = [q.strip() for q in right[right.find("(")+1:right.find(")")].split(',')]
+
+    ## DN Added - Start
+    # Query + predicate - used in predicates_constraint_all to get all the predicates
+    query_predicates = right[right.find(')')+1:] #PH changed this
+    # Group by part -- assuming only 1 aggregate function
+    try:
+        groupby_part = re.search('GROUP_BY(.*)\)\s*\)',query_predicates).group() #changed by PH
+    except AttributeError:
+        groupby_part = ''
+    # Sort part -- assuming sorting only on one variable - Need to discuss multi var sorting syntax 
+    try:
+        sort_part = re.search('(SORT_BY)(.*)(DESC|ASC)\'\s*\)',query_predicates).group()
+    except AttributeError:
+        sort_part = ''
+    # Limit part -- PH added this
+    try:
+        limit_part = re.search('(LIMIT)\s*\(\s*\d*\s*\)',query_predicates).group()
+    except AttributeError:
+        limit_part = ''
+    ## DN Added - End
+
+    predicates_constraint_all = query_predicates.replace(groupby_part,'').replace(sort_part,'')\
+                                                .replace(limit_part,'').replace(' ,','').strip().split(',')
+
+    predicates_constraint_dict = {}
+    having_dict = {}
     i=0
     for p in predicates_constraint_all:
-        i+=1
-        operator = re.findall(r'(['+allowed_comparisons + ']+)',p)[0].strip()
-        key = p[:p.find(operator)].strip()
-        value =  p[p.find(operator)+len(operator):].strip()
-        predicates_constraint_dict[key+'_'+str(i)] = [operator, value]
-    
+        if p:
+            i+=1
+            operator = re.findall(r'(['+allowed_comparisons + ']+)',p)[0].strip()
+            key = p[:p.find(operator)].strip()
+            value =  p[p.find(operator)+len(operator):].strip()
+            try:
+                if key in groupby_part.split(",",1)[1].split("=",1)[0].strip():
+                    having_dict[key+'_'+str(i)] = [operator, value]
+                else:
+                    predicates_constraint_dict[key+'_'+str(i)] = [operator, value]
+            except IndexError:
+                    predicates_constraint_dict[key+'_'+str(i)] = [operator, value]
 
+        
     predicates= {}
     select = {}
     index=0
-    for q in query:
+    for q in main_table:
         if (q!=dummy and (q not in return_select)):
-            predicates[DatalogParser.columns[index]]= q
+            predicates[DatalogParser.COLUMNS[index]]= q
         if (q!=dummy and (q in return_select)):
-            select[DatalogParser.columns[index]]= q
+            select[DatalogParser.COLUMNS[index]]= q
         index+=1
     
-    ## DN added this    
+
+    
+    ## DN added this
     def iserror(value):
         try:
             isinstance(int(value), (int,float))
             return True
         except ValueError:
             return False
-        
+    
+    
+    ## Where clause
     where_equality ={}
     where_inequality = {}
     for key, value in predicates.iteritems():
@@ -77,22 +113,60 @@ class DatalogParser(object):
             where_equality [key] = value
         else:
             where_inequality [value] = key
-            
-    create_view_clause = "CREATE VIEW "+return_table+ " AS"
+
+        
+    ## DN added this
+    ## For group by
+    groupby_vars= []
+    if len(groupby_part) > 0:
+        select[groupby_part.split(",",1)[1].split("=",1)[1].replace("))",")")]= groupby_part.split(",",1)[1].split("=",1)[0].strip()
+        groupby_vars = groupby_part.split(",",1)[0].split("[",1)[1].replace("]","")
+
+    
+    ## DN added this
+    # For sortby
+    sort_var=[]
+    sort_type = []
+    if len(sort_part) > 0:
+        rhs = sort_part[sort_part.find('(')+1:sort_part.find(')')].split(',')[1].strip().replace("'","")
+        lhs = sort_part[sort_part.find('(')+1:sort_part.find(')')].split(',')[0]
+        sort_var = lhs
+        sort_type = rhs
+    
+    limit_num = limit_part[limit_part.find('(')+1:limit_part.find(')')].strip()
+    
     select_clause = "SELECT "+ ", ".join(x+" AS "+y for x,y in select.iteritems())
     from_clause = "FROM "+ from_table
-
-
-    if len(where_inequality)>0: ## DN added this
-        where_clause = "WHERE "+"AND ".join(x+" = "+y for x,y in where_equality.iteritems())+ 'AND '+\
-        ", ".join(where_inequality[x[:x.find('_')]]+y+z for x,[y,z] in predicates_constraint_dict.iteritems())
-    else: ## DN added this
+    if (len(where_inequality)>0 and len(where_equality)>0): ## DN added this
+        where_clause = "WHERE "+" AND ".join(x+" = "+y for x,y in where_equality.iteritems())+ " AND "+\
+            " AND ".join(where_inequality[x[:x.find('_')]]+y+z for x,[y,z] in predicates_constraint_dict.iteritems())
+    elif (len(where_equality)>0): ## DN added this
         where_clause = "WHERE "+" AND ".join(x+" = "+y for x,y in where_equality.iteritems())
+    elif (len(where_inequality)>0): ## DN added this
+        where_clause = "WHERE "+" AND "+" AND ".join(where_inequality[x[:x.find('_')]]+y+z for x,[y,z] in predicates_constraint_dict.iteritems())
+    else:
+        where_clause = ""
+    
+    if len(groupby_vars) > 0:
+        groupby_clause = "GROUP BY" + " " + groupby_vars ## DN Added this
+    else:
+        groupby_clause = ""
+
+    if len(having_dict) > 0:
+        having_clause = "HAVING" + " " + ','.join(x[:x.find('_')][0]+y+z for x,[y,z] in having_dict.iteritems())
+    else:
+        having_clause = ""
+
+    if len(sort_var) > 0:
+        sort_clause = "ORDER BY" + " " + sort_var + " "+ sort_type
+    else:
+        sort_clause = ""
+    if len(limit_num) > 0:
+        limit_clause = "LIMIT" + " " + limit_num
+    else:
+        limit_clause = ""
         
-    if len(where_equality)>0 or len(where_inequality)>0: ## DN added this
-        sql_str = select_clause +" "+ from_clause +" "+ where_clause ## DN removed create view
-    else: ## DN added this
-        sql_str = select_clause +" "+ from_clause ## DN added this and removed create view
+    sql_str = select_clause+" "+ from_clause+" "+ where_clause+" "+groupby_clause+" "+ having_clause+" "+ sort_clause+" "+ limit_clause  ## DN removed create view
             
     return sql_str
     
