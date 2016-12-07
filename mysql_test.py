@@ -28,6 +28,7 @@ def execute_test_sql(sql_query):
 
 
 def test_one():
+    """Return the eventid's that occurred on 2012/12/25."""
     datalog_query = """q(eventid) :- gtd(eventid, iyear, imonth, iday, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,  _, _,
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,  _, _, _,
@@ -49,6 +50,7 @@ def test_one():
 
 
 def test_two():
+    """Return the summary of all events in the city of Khost, Afghanistan in 2012."""
     datalog_query = """q(summary) :- gtd(_, iyear, _, _, _, _, _, _, countrytxt, _, _, _, city, _, _, _, _, _, summary,
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,  _,
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,  _, _,
@@ -70,6 +72,7 @@ def test_two():
 
 
 def test_three():
+    """Which countries had events on 2012-09-11?"""
     datalog_query = """q(country_txt) :- gtd(_, iyear, imonth, iday, _, _, _, _, country_txt, _, _, _, _, _, _,
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
     _, _, _, _,  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
@@ -92,6 +95,7 @@ def test_three():
 
 
 def test_four():
+    """Return eventid and summary for all events with over 500 casualties."""
     datalog_query = """q(eventid,summary) :- gtd(eventid, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, summary,
      _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
      _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
@@ -112,6 +116,7 @@ def test_four():
 
 
 def test_five():
+    """Which 5 days (month and day only) have the most attacks over all the years?"""
     datalog_query = """q(iday, imonth,num_events) :- gtd(eventid, _, imonth, iday, _, _, _, _, _, _, _, _,
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
     _, _, _, _, _, _,  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
