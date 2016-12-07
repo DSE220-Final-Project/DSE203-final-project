@@ -70,11 +70,11 @@ def test_two():
 
 
 def test_three():
-    datalog_query = """q(country_txt, cnt) :- gtd(_, iyear, imonth, iday, _, _, _, _, country_txt, _, _, _, _, _, _,
+    datalog_query = """q(country_txt) :- gtd(_, iyear, imonth, iday, _, _, _, _, country_txt, _, _, _, _, _, _,
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
     _, _, _, _,  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
     _, _, _, _,  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
-    _, _, _,  _, _, _, _), iday = 11, imonth = 9, iyear = 2012, GROUP_BY([country_txt], cnt = COUNT(country_txt)) """
+    _, _, _,  _, _, _, _), iday = 11, imonth = 9, iyear = 2012, DISTINCT([country_txt]) """
 
     wrapper = mysql_wrapper.MysqlWrapper()
     datalog_df = wrapper.execute(datalog_query)
