@@ -70,11 +70,11 @@ def test_two():
 
 
 def test_three():
-    datalog_query = """q(country_txt) :- DISTINCT(gtd(_, iyear, imonth, iday, _, _, _, _, country_txt, _, _, _, _, _, _,
+    datalog_query = """q(country_txt, cnt) :- gtd(_, iyear, imonth, iday, _, _, _, _, country_txt, _, _, _, _, _, _,
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
     _, _, _, _,  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
     _, _, _, _,  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
-    _, _, _,  _, _, _, _), iday = 11, imonth = 9, iyear = 2012)"""
+    _, _, _,  _, _, _, _), iday = 11, imonth = 9, iyear = 2012, GROUP_BY([country_txt], cnt = COUNT(country_txt)) """
 
     wrapper = mysql_wrapper.MysqlWrapper()
     datalog_df = wrapper.execute(datalog_query)
@@ -112,11 +112,12 @@ def test_four():
 
 
 def test_five():
-    datalog_query = """q(iday, imonth,num_events) :- SORT(GROUP_BY(gtd(eventid, _, imonth, iday, _, _, _, _, _, _, _, _,
-    _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
+    datalog_query = """q(iday, imonth,num_events) :- gtd(eventid, _, imonth, iday, _, _, _, _, _, _, _, _,
+    _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
     _, _, _, _, _, _,  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
     _, _, _, _, _,  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
-    _, _, _, _, _, _, _, _, _, _), [iday,imonth], num_events = COUNT(eventid)),num_events, 'DESC'), LIMIT(5)"""
+    _, _, _, _, _, _, _, _, _, _, _), GROUP_BY([iday,imonth], num_events = COUNT(eventid)), SORT(num_events, 'DESC'),
+    LIMIT(5)"""
 
     wrapper = mysql_wrapper.MysqlWrapper()
     datalog_df = wrapper.execute(datalog_query)
