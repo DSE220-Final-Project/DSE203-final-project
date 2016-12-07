@@ -103,7 +103,7 @@ class DatalogParser(object):
   #     right = datalog_str.split(separator )[1]
       separator = ":-"
       dummy = "_"
-      allowed_comparisons = '==|!=|>|<|<=|>='
+      allowed_comparisons = '=|!=|>|<|<=|>='
 
       return_table = left[:left.find("(")]
       return_select = [c.strip() for c in left[left.find("(")+1:left.find(")")].split(',')]
