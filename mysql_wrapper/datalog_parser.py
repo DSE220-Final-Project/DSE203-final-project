@@ -23,8 +23,12 @@ class DatalogParser(object):
     super(DatalogParser, self).__init__()
     self.arg = arg
     
-  def build_string(self, select,from_table,where_equality,where_inequality,predicates_constraint_dict,groupby_vars,having_dict,sort_var,sort_type,limit_num):
-      select_clause = "SELECT "+ ", ".join(x+" AS "+y+" " for x,y in select.iteritems())
+  def build_string(self, distinct_part, select,from_table,where_equality,where_inequality,predicates_constraint_dict,groupby_vars,having_dict,sort_var,sort_type,limit_num):
+      ## Adding distinct logic to select
+      if (len(distinct_part)>0):
+        select_clause = "SELECT DISTINCT "+ ", ".join(x+" AS "+y+" " for x,y in select.iteritems())
+      else:
+        select_clause = "SELECT "+ ", ".join(x+" AS "+y+" " for x,y in select.iteritems())
       from_clause = "FROM "+ from_table + " "
       where_clause =""
       ## Where clause
@@ -105,7 +109,7 @@ class DatalogParser(object):
     return_table = left[:left.find("(")]
     return_select = [c.strip() for c in left[left.find("(")+1:left.find(")")].split(',')]
 
-    from_table = right.split('(')[0]
+    from_table = right.split('(')[0].lower()
 
     # Query
     main_table = [q.strip() for q in right[right.find("(")+1:right.find(")")].split(',')]
@@ -128,6 +132,12 @@ class DatalogParser(object):
         limit_part = re.search('(LIMIT)\s*\(\s*\d*\s*\)',query_predicates).group()
     except AttributeError:
         limit_part = ''
+        
+    # Distinct part -- PH added this
+    try:
+        distinct_part = re.search('(DISTINCT)\s*',query_predicates).group()
+    except AttributeError:
+        distinct_part = ''
     ## DN Added - End
 
     predicates_constraint_all = query_predicates.replace(groupby_part,'').replace(sort_part,'')\
@@ -209,7 +219,7 @@ class DatalogParser(object):
 
     limit_num = limit_part[limit_part.find('(')+1:limit_part.find(')')].strip()
     
-    return [select,from_table,where_equality,where_inequality,predicates_constraint_dict,groupby_vars,having_dict,sort_var,sort_type,limit_num]
+    return [distinct_part,select,from_table,where_equality,where_inequality,predicates_constraint_dict,groupby_vars,having_dict,sort_var,sort_type,limit_num]
     
   def sql_generator(self, datalog_str):
       global separator
@@ -235,7 +245,7 @@ class DatalogParser(object):
 
           ## When there are no inequalities
           if all(x == equalities[0] for x in equalities) and all(x == inequalities[0] for x in inequalities):
-              sql_query = build_string(output[0][0],output[0][1],output[0][2],output[0][3],output[0][4],output[0][5],output[0][6],output[0][7],output[0][8],output[0][9])
+              sql_query = build_string(output[0][0],output[0][1],output[0][2],output[0][3],output[0][4],output[0][5],output[0][6],output[0][7],output[0][8],output[0][9],output[0][10])
 
           ## When there are different criteria in the inequalities => or in inequalities
           elif all(x == equalities[0] for x in equalities) and ~all(x == inequalities[0] for x in inequalities):
@@ -248,7 +258,7 @@ class DatalogParser(object):
                           all_inequalities_new_dict[k]=[v]
                   else: 
                       all_inequalities_new_dict[k].append(v)
-              sql_query = build_string(output[0][0],output[0][1],output[0][2],output[0][3],all_inequalities_new_dict,output[0][5],output[0][6],output[0][7],output[0][8],output[0][9])
+              sql_query = build_string(output[0][0],output[0][1],output[0][2],output[0][3],all_inequalities_new_dict,output[0][5],output[0][6],output[0][7],output[0][8],output[0][9],output[0][10])
 
 
           ## When there are different criteria in the equalities => or in equalities
@@ -262,7 +272,7 @@ class DatalogParser(object):
                           all_equalities_new_dict[k]=[v]
                   else:
                       all_equalities_new_dict[k].append(v)
-              sql_query = build_string(output[0][0],output[0][1],all_equalities_new_dict,output[0][3],output[0][4],output[0][5],output[0][6],output[0][7],output[0][8],output[0][9])
+              sql_query = build_string(output[0][0],output[0][1],all_equalities_new_dict,output[0][3],output[0][4],output[0][5],output[0][6],output[0][7],output[0][8],output[0][9],output[0][10])
 
           ## When there are different criteria in both equalities and inequalities => or in both equalities and inequalities
           elif ~all(x == equalities[0] for x in equalities) and ~all(x == inequalities[0] for x in inequalities):
@@ -284,14 +294,14 @@ class DatalogParser(object):
                           all_equalities_new_dict[k]=[v]
                   else: 
                       all_equalities_new_dict[k].append(v)
-              sql_query = build_string(output[0][0],output[0][1],all_equalities_new_dict,output[0][3],all_inequalities_new_dict,output[0][5],output[0][6],output[0][7],output[0][8],output[0][9])
+              sql_query = build_string(output[0][0],output[0][1],all_equalities_new_dict,output[0][3],all_inequalities_new_dict,output[0][5],output[0][6],output[0][7],output[0][8],output[0][9],output[0][10])
 
       ## For non OR query
       else:
           left = datalog_str.split(separator )[0]
           right = datalog_str.split(separator )[1]
           output = self.dl_parse(left,right)
-          sql_query = self.build_string(output[0],output[1],output[2],output[3],output[4],output[5],output[6],output[7],output[8],output[9])
+          sql_query = self.build_string(output[0],output[1],output[2],output[3],output[4],output[5],output[6],output[7],output[8],output[9],output[10])
         
       return sql_query
   
