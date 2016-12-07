@@ -199,7 +199,10 @@ class DatalogParser(object):
     if len(groupby_part) > 0:
         groupby_operation_raw = groupby_part.split(",",1)[1].split("=",1)[1].replace("))",")")
         groupby_operation_raw_var = groupby_operation_raw[groupby_operation_raw.find('(')+1:groupby_operation_raw.find(')')]
-        groupby_operation_var = where_inequality[groupby_operation_raw_var]
+        try:
+            groupby_operation_var = where_inequality[groupby_operation_raw_var]
+        except KeyError:
+            groupby_operation_var = select[groupby_operation_raw_var]
         groupby_operation = groupby_operation_raw.replace(groupby_operation_raw_var ,groupby_operation_var)
         select[groupby_operation]= groupby_part.split(",",1)[1].split("=",1)[0].strip()
         try:
