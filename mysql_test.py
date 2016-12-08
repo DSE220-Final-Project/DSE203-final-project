@@ -137,3 +137,10 @@ def test_five():
     mysql_df = execute_test_sql(mysql_query)
 
     assert_frame_equal(datalog_df, mysql_df)  # mysql_df.equals(datalog_df)
+    
+if __name__ == '__main__':
+  test_one()
+  test_two()
+  test_three()
+  # test_four()
+  # test_five()
