@@ -121,7 +121,7 @@ def test_five():
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
     _, _, _, _, _, _,  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
     _, _, _, _, _,  _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
-    _, _, _, _, _, _, _, _, _, _, _), GROUP_BY([iday,imonth], num_events = COUNT(eventid)), SORT(num_events, 'DESC'),
+    _, _, _, _, _, _, _, _, _, _, _), GROUP_BY([iday,imonth], num_events = COUNT(eventid)), SORT_BY(num_events, 'DESC'),
     LIMIT(5)"""
 
     wrapper = mysql_wrapper.MysqlWrapper()
@@ -142,5 +142,5 @@ if __name__ == '__main__':
   test_one()
   test_two()
   test_three()
-  # test_four()
-  # test_five()
+  test_four()
+  test_five()
