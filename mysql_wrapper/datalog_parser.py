@@ -141,7 +141,7 @@ class DatalogParser(object):
     ## DN Added - End
 
     predicates_constraint_all = query_predicates.replace(groupby_part,'').replace(sort_part,'')\
-                                                .replace(limit_part,'').replace(' ,','').strip().split(',')
+                                .replace(limit_part,'').replace(distinct_part,'').replace(' ,','').strip().split(',')
 
     predicates_constraint_dict = {}
     having_dict = {}
