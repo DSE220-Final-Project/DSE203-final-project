@@ -204,11 +204,13 @@ class DatalogParser(object):
         except KeyError:
             groupby_operation_var = select[groupby_operation_raw_var]
         groupby_operation = groupby_operation_raw.replace(groupby_operation_raw_var ,groupby_operation_var)
-        select[groupby_operation]= groupby_part.split(",",1)[1].split("=",1)[0].strip()
+        select[groupby_operation]= groupby_part.split("]",1)[1].split("=",1)[0].replace(',','').strip()
+        groupby_var_list = groupby_part.split("]",1)[0].split("[",1)[1].split(',')
         try:
-            groupby_vars = where_inequality[groupby_part.split(",",1)[0].split("[",1)[1].replace("]","")]
+            groupby_vars = ', '.join([where_inequality[g] for g in groupby_var_list])
         except KeyError:
-            groupby_vars = {v: k for k, v in select.iteritems()}[groupby_part.split(",",1)[0].split("[",1)[1].replace("]","")]
+            select_reversed = {v: k for k, v in select.iteritems()}
+            groupby_vars = ', '.join([select_reversed[g] for g in groupby_var_list])
 
     ## DN added this
     # For sortby
